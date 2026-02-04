@@ -5,6 +5,10 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
+    # Timer
+  schedule:
+    - cron: "0 9,18 * * *"
+  workflow_dispatch:
 
 jobs:
   test:
@@ -36,7 +40,9 @@ jobs:
     # This job takes the report from the test job and deploys it to GitHub Pages
   deploy-report:
     # Deploy only when tests are run on the main or master branch
-    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && github.event_name == 'push'
+    if:
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && (github.event_name == 'push' ||
+      github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
     needs: [test] # This job depends on the 'test' job completing successfully
     runs-on: ubuntu-latest
     permissions:
