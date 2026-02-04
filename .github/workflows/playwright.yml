@@ -32,3 +32,29 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
+
+    # This job takes the report from the test job and deploys it to GitHub Pages
+  deploy-report:
+    # Deploy only when tests are run on the main or master branch
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && github.event_name == 'push'
+    needs: [test] # This job depends on the 'test' job completing successfully
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Grant permissions to write to the repository
+    steps:
+      - name: Download the report artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
+
+      - name: Deploy report to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token:
+            ${{ secrets.GITHUB_TOKEN }}
+            # Deploy the contents of the playwright-report folder to the gh-pages branch
+          publish_dir:
+            ./playwright-report
+            # Keep the history of previous reports
+          keep_files: true
